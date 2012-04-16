@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# USB sound card JACK ports
+alsa_in -d hw:default -c 1 -q 0 >/dev/null &
+alsa_out -d hw:default -c 2 -q 0 >/dev/null &
+
+# Jack Oscilloscope (Bus.oscope[] in ChucK)
+# NOTE: frame size given here limits the frame size that can be set later on
+# currently the MIDI slider can set from 512 to (512::samp + 2::second)/samp
+jack.scope -n 3 -w 512 -b 96512 >/dev/null &
+
+# ChucK server
+# NOTE: Last three output ports are for jack.scope
+chuck --in3 --out7 --loop lib.ck
+

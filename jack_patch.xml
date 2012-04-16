@@ -1,0 +1,56 @@
+<!DOCTYPE patchbay>
+<patchbay version="0.3.4" name="jack_patch">
+ <output-sockets>
+  <socket exclusive="off" client="ChucK" type="audio" name="Chuck Out 1">
+   <plug>outport 0</plug>
+   <plug>outport 1</plug>
+  </socket>
+  <socket exclusive="off" client="ChucK" type="audio" name="Chuck Out 2">
+   <plug>outport 2</plug>
+   <plug>outport 3</plug>
+  </socket>
+  <socket exclusive="off" client="ChucK" type="audio" name="Chuck Out 3">
+   <plug>outport 4</plug>
+   <plug>outport 5</plug>
+   <plug>outport 6</plug>
+  </socket>
+  <socket exclusive="off" client="system" type="audio" name="ALSA hw:0 Out">
+   <plug>capture_1</plug>
+   <plug>capture_2</plug>
+  </socket>
+  <socket exclusive="off" client="alsa_in" type="audio" name="ALSA hw:default Out">
+   <plug>capture_1</plug>
+  </socket>
+ </output-sockets>
+ <input-sockets>
+  <socket exclusive="off" client="system" type="audio" name="ALSA hw:0 In">
+   <plug>playback_1</plug>
+   <plug>playback_2</plug>
+  </socket>
+  <socket exclusive="off" client="alsa_out" type="audio" name="ALSA hw:default In">
+   <plug>playback_1</plug>
+   <plug>playback_2</plug>
+  </socket>
+  <socket exclusive="off" client="jack\.scope-[0-9]+" type="audio" name="Oscilloscope In">
+   <plug>in_1</plug>
+   <plug>in_2</plug>
+   <plug>in_3</plug>
+  </socket>
+  <socket exclusive="off" client="ChucK" type="audio" name="Chuck In 1">
+   <plug>inport 0</plug>
+   <plug>inport 1</plug>
+  </socket>
+  <socket exclusive="off" client="ChucK" type="audio" name="Chuck In 2">
+   <plug>inport 2</plug>
+  </socket>
+ </input-sockets>
+ <slots/>
+ <cables>
+  <cable output="Chuck Out 1" input="ALSA hw:0 In"/>
+  <cable output="Chuck Out 2" input="ALSA hw:default In"/>
+  <cable output="Chuck Out 3" input="Oscilloscope In"/>
+  <cable output="ALSA hw:0 Out" input="Chuck In 1"/>
+  <cable output="ALSA hw:default Out" input="Chuck In 2"/>
+ </cables>
+</patchbay>
+

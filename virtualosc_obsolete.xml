@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<interface>
+	<tab label="Oscillator">
+		<slider label="Freq (Hz)"
+			type="set" geo="9.76 16.67 3.91 66.67"
+			color="white" max="20" showValue="true"
+			OSCAddress="/osc/freq">10</slider>
+
+		<slider label="Pitch (Hz)"
+			type="relative" geo="19.53 16.67 3.91 66.67"
+			color="blue red" min="100" max="1000" showValue="true"
+			OSCAddress="/osc/pitch">400</slider>
+
+		<slider label="Range (Hz)"
+			type="relative" geo="29.3 16.67 3.91 66.67"
+			color="white" max="100" showValue="true"
+			OSCAddress="/osc/range">80</slider>
+
+		<slider geo="39.06 16.67 6 53" color="red green"
+			min="20" max="200" step="5" label="VOL (db)" showValue="true"
+			OSCAddress="/osc/volume">100</slider>
+
+		<switch geo="39.06 73 6 10" label="MUTE"
+			OSCAddress="/osc/mute">true</switch>
+
+	</tab>
+</interface>

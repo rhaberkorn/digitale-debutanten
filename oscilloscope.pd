@@ -1,0 +1,17 @@
+#N canvas 764 391 486 417 10;
+#X obj 9 351 adc~;
+#X obj 10 392 tabwrite~ oscilloscope;
+#N canvas 0 0 450 300 (subpatch) 0;
+#X array oscilloscope 4410 float 0;
+#X coords 0 100 4409 -100 400 280 1;
+#X restore 3 14 graph;
+#X obj 62 303 loadbang;
+#X msg 144 348 \; pd dsp 1;
+#X msg 19 302 bang;
+#X obj 62 348 metro 100;
+#X connect 0 0 1 0;
+#X connect 3 0 4 0;
+#X connect 3 0 6 0;
+#X connect 5 0 1 0;
+#X connect 5 0 6 0;
+#X connect 6 0 1 0;
