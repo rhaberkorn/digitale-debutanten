@@ -27,4 +27,8 @@ Bus.out_right => Dyno dyn2 => clipper2.input;
 clipper2.output => dac.chan(1);
 dyn2.limit();
 
+/*
+ * NOTE: need to keep shred running, probably because of the constructed patch
+ * (ChucK bug)
+ */
 while (day => now);
