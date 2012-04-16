@@ -1,4 +1,5 @@
 /* Includes */
+Machine.add("lib/SampOsc.ck");
 Machine.add("lib/Clipper.ck");
 Machine.add("lib/MIDI.ck");
 Machine.add("lib/Queue.ck");
