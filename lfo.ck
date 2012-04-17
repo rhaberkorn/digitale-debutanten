@@ -1,12 +1,14 @@
 /*
  * Configurable LFOs
  */
-UGen @lfo[2]; // FIXME: ChucK bug prevents elegant initialization
+UGen @lfo[3]; // FIXME: ChucK bug prevents elegant initialization with [new ..., ...]
 new SinOsc @=> lfo[0];
 new PulseOsc @=> lfo[1];
+new SampOsc @=> lfo[2];
+10 => lfo[2].gain; /* preamp, to get value range 0 to 1000 */
 
 Step lfo_freq;
-for (0 => int i; i < lfo.cap(); i++)
+for (0 => int i; i < 2 /*lfo.cap()*/; i++)
 	lfo_freq => lfo[i];
 
 0 => int cur_lfo;
@@ -35,6 +37,13 @@ change_lfo(int new_lfo)
 	lfo[cur_lfo] =< lfo_gain;
 	/* rechuck lfo */
 	lfo[new_lfo => cur_lfo] => lfo_gain;
+
+	if (cur_lfo == 2 /* SampOsc */) {
+		/* switch off base freq */
+		0 => base.gain;
+	} else {
+		1 => base.gain;
+	}
 }
 
 /*
@@ -63,18 +72,24 @@ while (min => now) {
 		if (channel == 0 && cmd == 0xB0) {
 			<<< "Channel:", channel, "Command:", cmd, "Controller:", msg.data2, "Value:", value >>>;
 
-			if (msg.data2 == 22)
+			if (msg.data2 == 22) {
 				value => rev.gain;
-			else if (msg.data2 == 13)
+			} else if (msg.data2 == 13) {
 				100 + value*900 => base.next;
-			else if (msg.data2 == 12)
+				/* base freq slider is sample rate for SampOsc */
+				value*2 => (lfo[2] $ SampOsc).rate;
+			} else if (msg.data2 == 12) {
 				value*100 => lfo_gain.gain;
-			else if (msg.data2 == 21)
-				value*20 => lfo_freq.next;
-			else if (msg.data2 == 31)
+			} else if (msg.data2 == 21) {
+				/* setting lfo_freq does not influence SampOsc! */
+				value*20 => lfo_freq.next => (lfo[2] $ SampOsc).freq;
+			} else if (msg.data2 == 31) {
 				change_lfo(0);
-			else if (msg.data2 == 41)
+			} else if (msg.data2 == 41) {
 				change_lfo(1);
+			} else if (msg.data2 == 30) {
+				change_lfo(2);
+			}
 			/*else if (msg.data2 == 9)
 				value $ int => lfo.harmonics;*/
 		}
