@@ -2,10 +2,6 @@
  * Queue data structure
  */
 public class Queue {
-	class Element {
-		Element @next;
-		Object @payload;
-	}
 	Element head @=> Element @tail;
 
 	fun void
