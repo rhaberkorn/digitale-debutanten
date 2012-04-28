@@ -105,11 +105,14 @@ while (min => now) {
 				/* setting lfo_freq does not influence SampOsc! */
 				value*20 => lfo_freq.next => (lfo[2] $ SampOsc).freq;
 			} else if (msg.data2 == 31) {
-				0 => change_lfo;
+				if (value $ int)
+					0 => change_lfo;
 			} else if (msg.data2 == 41) {
-				1 => change_lfo;
+				if (value $ int)
+					1 => change_lfo;
 			} else if (msg.data2 == 30) {
-				2 => change_lfo;
+				if (value $ int)
+					2 => change_lfo;
 			} else if (msg.data2 == 40) {
 				if (value $ int)
 					1 => change_osc;
