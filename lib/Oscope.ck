@@ -78,18 +78,17 @@ for (0 => int i; i < Bus.oscope.cap(); i++)
  * jack.scope configuration via MIDI (Channel/Scene 1)
  */
 /* FIXME: custom nanoKONTROL events */
-if (me.args() > 1)
+if (me.args() > 0)
 	me.exit();
-
-1 => int device;
-if (me.args() == 1)
-	me.arg(0) => Std.atoi => device;
 
 MidiIn min;
 
-if (!min.open(device))
+/* always open MIDI Through port, actual connection is done by Jack */
+if (!min.open(0))
 	me.exit();
 <<< "MIDI device:", min.num(), " -> ", min.name() >>>;
+
+3 => int on_channel; /* scene 4 */
 
 while (min => now) {
 	while (MidiMsg msg => min.recv) {
@@ -97,7 +96,7 @@ while (min => now) {
 		msg.data1 & 0xF0 => int cmd;
 		(msg.data3 $ float)/127 => float value;
 
-		if (channel == 1 && cmd == 0xB0) {
+		if (channel == on_channel && cmd == 0xB0) {
 			<<< "Channel:", channel, "Command:", cmd, "Controller:", msg.data2, "Value:", value >>>;
 
 			if (msg.data2 == 67) {
