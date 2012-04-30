@@ -20,7 +20,8 @@ public class SampOsc extends SndBuf {
 	 * NOTE: Due to a ChucK bug, simply killing and restarting the shred
 	 * does not work very well.
 	 */
-	fun void __loop() /* pseudo-private */
+	fun void
+	__loop() /* pseudo-private */
 	{
 		now => time last_trigger;
 
