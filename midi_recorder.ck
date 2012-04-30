@@ -1,6 +1,17 @@
 class RecEvent {
 	dur pit;
 	MidiMsg @msg;
+
+	fun static RecEvent @
+	new(dur pit, MidiMsg @msg)
+	{
+		RecEvent obj;
+
+		pit => obj.pit;
+		msg @=> obj.msg;
+
+		return obj;
+	}
 }
 Queue buffer;
 
@@ -83,10 +94,7 @@ while (min => now) {
 		} else if (recording) {
 			<<< "REC Channel:", channel, "Command:", cmd, "Controller:", msg.data2, "Value:", value >>>;
 
-			RecEvent recev => buffer.push;
-			now - start => recev.pit;
-			msg @=> recev.msg;
-
+			RecEvent.new(now - start, msg) => buffer.push;
 			now => start;
 		}
 	}
