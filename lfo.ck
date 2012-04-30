@@ -66,63 +66,43 @@ change_osc(int new_osc)
 /*
  * LFO configuration via MIDI
  */
-/* FIXME: custom nanoKONTROL events */
 if (me.args() > 1)
 	me.exit();
 
-/* first param: scene number */
-0 => int on_channel;
+NanoEvent nanoev;
+
+/* first param: scene name */
+"primary" @=> nanoev.wantScene;
 if (me.args() > 0)
-	(me.arg(0) => Std.atoi)-1 => on_channel;
-if (on_channel < 0 || on_channel > 3)
-	me.exit();
+	me.arg(0) @=> nanoev.wantScene;
 
-MidiIn min;
-
-/* always open MIDI Through port, actual connection is done by Jack */
-if (!min.open(0))
-	me.exit();
-<<< "MIDI device:", min.num(), " -> ", min.name() >>>;
-
-while (min => now) {
-	while (MidiMsg msg => min.recv) {
-		msg.data1 & 0x0F => int channel;
-		msg.data1 & 0xF0 => int cmd;
-		(msg.data3 $ float)/127 => float value;
-
-		if (channel == on_channel && cmd == 0xB0) {
-			<<< "Channel:", channel, "Command:", cmd, "Controller:", msg.data2, "Value:", value >>>;
-
-			if (msg.data2 == 22) {
-				value => rev.gain;
-			} else if (msg.data2 == 13) {
-				100 + value*900 => base.next;
-				/* base freq slider is sample rate for SampOsc */
-				value*2 => (lfo[2] $ SampOsc).rate;
-			} else if (msg.data2 == 12) {
-				value*100 => lfo_gain.gain;
-			} else if (msg.data2 == 21) {
-				/* setting lfo_freq does not influence SampOsc! */
-				value*20 => lfo_freq.next => (lfo[2] $ SampOsc).freq;
-			} else if (msg.data2 == 31) {
-				if (value $ int)
-					0 => change_lfo;
-			} else if (msg.data2 == 41) {
-				if (value $ int)
-					1 => change_lfo;
-			} else if (msg.data2 == 30) {
-				if (value $ int)
-					2 => change_lfo;
-			} else if (msg.data2 == 40) {
-				if (value $ int)
-					1 => change_osc;
-				else
-					0 => change_osc;
-			} else if (msg.data2 == 9) {
-				value*second => rev.delay;
-			}
-			/*else if (msg.data2 == 9)
-				value $ int => lfo.harmonics;*/
-		}
+while (nanoev => now) {
+	if ("lfoVolumeKnob" => nanoev.isControl) {
+		nanoev.getFloat() => rev.gain;
+	} else if ("lfoPitchSlider" => nanoev.isControl) {
+		nanoev.getFloat(100, 1000) => base.next;
+		/* base freq slider is sample rate for SampOsc */
+		nanoev.getFloat(2) => (lfo[2] $ SampOsc).rate;
+	} else if ("lfoDepthSlider" => nanoev.isControl) {
+		nanoev.getFloat(100) => lfo_gain.gain;
+	} else if ("lfoFreqKnob" => nanoev.isControl) {
+		/* setting lfo_freq does not influence SampOsc! */
+		nanoev.getFloat(20) => lfo_freq.next => (lfo[2] $ SampOsc).freq;
+	} else if ("lfoSinOscButton" => nanoev.isControl) {
+		if (nanoev.getBool())
+			0 => change_lfo;
+	} else if ("lfoPulseOscButton" => nanoev.isControl) {
+		if (nanoev.getBool())
+			1 => change_lfo;
+	} else if ("lfoSampOscButton" => nanoev.isControl) {
+		if (nanoev.getBool())
+			2 => change_lfo;
+	} else if ("lfoWaveToggle" => nanoev.isControl) {
+		if (nanoev.getBool())
+			1 => change_osc;
+		else
+			0 => change_osc;
+	} else if ("lfoEchoSlider" => nanoev.isControl) {
+		nanoev.getDur(second) => rev.delay;
 	}
 }

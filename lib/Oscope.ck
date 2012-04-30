@@ -75,45 +75,24 @@ for (0 => int i; i < Bus.oscope.cap(); i++)
 	Bus.oscope[i] => dac.chan(4 + i);
 
 /*
- * jack.scope configuration via MIDI (Channel/Scene 1)
+ * jack.scope configuration
  */
-/* FIXME: custom nanoKONTROL events */
-if (me.args() > 0)
-	me.exit();
+"oscope" => NanoEvent.new @=> NanoEvent @nanoev;
 
-MidiIn min;
-
-/* always open MIDI Through port, actual connection is done by Jack */
-if (!min.open(0))
-	me.exit();
-<<< "MIDI device:", min.num(), " -> ", min.name() >>>;
-
-3 => int on_channel; /* scene 4 */
-
-while (min => now) {
-	while (MidiMsg msg => min.recv) {
-		msg.data1 & 0x0F => int channel;
-		msg.data1 & 0xF0 => int cmd;
-		(msg.data3 $ float)/127 => float value;
-
-		if (channel == on_channel && cmd == 0xB0) {
-			<<< "Channel:", channel, "Command:", cmd, "Controller:", msg.data2, "Value:", value >>>;
-
-			if (msg.data2 == 67) {
-				if (value $ int)
-					"embed" => Oscope.mode;
-				else
-					"signal" => Oscope.mode;
-			} else if (msg.data2 == 76) {
-				if (value $ int)
-					"fill" => Oscope.style;
-				else
-					"line" => Oscope.style;
-			} else if (msg.data2 == 42) {
-				512::samp + value*2::second => Oscope.frames;
-			} else if (msg.data2 == 57) {
-				50::ms + value*second => Oscope.delay;
-			}
-		}
+while (nanoev => now) {
+	if ("modeToggle" => nanoev.isControl) {
+		if (nanoev.getBool())
+			"embed" => Oscope.mode;
+		else
+			"signal" => Oscope.mode;
+	} else if ("fillToggle" => nanoev.isControl) {
+		if (nanoev.getBool())
+			"fill" => Oscope.style;
+		else
+			"line" => Oscope.style;
+	} else if ("frameSlider" => nanoev.isControl) {
+		nanoev.getDur(512::samp, 2::second) => Oscope.frames;
+	} else if ("delayKnob" => nanoev.isControl) {
+		nanoev.getDur(50::ms, second) => Oscope.delay;
 	}
 }
