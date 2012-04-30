@@ -1,24 +1,23 @@
-// chuck this with other shreds to record to file
-// example> chuck foo.ck bar.ck rec (see also rec2.ck)
+/*
+ * dac master wave recorder
+ * arguments: <base_filename> (default "out")
+ * will write <base_filename>_left.wav, <base_filename>_right.wav
+ */
 
-// FIXME: stereo recording
+if (me.args() > 1)
+	me.exit();
 
-// arguments: rec:<filename>
-
-// get name
-me.arg(0) => string filename;
-if (!filename.length())
-	"foo.wav" => filename;
+"out" => string filename;
+if (me.args() > 0)
+	me.arg(0) => filename;
 
 // pull samples from the dac
-dac => Gain g => WvOut w => blackhole;
-// this is the output file name
-filename => w.wavFilename;
-<<<"writing to file:", "'" + w.filename() + "'">>>;
+dac.chan(0) => WvOut out_left => blackhole;
+dac.chan(1) => WvOut out_right => blackhole;
 
-// any gain you want for the output
-//.5 => g.gain;
+filename+"_left.wav" => out_left.wavFilename;
+filename+"_right.wav" => out_right.wavFilename;
 
-// infinite time loop...
-// ctrl-c will stop it, or modify to desired duration
+<<< "writing to files:", out_left.filename(), out_right.filename() >>>;
+
 while (day => now);
