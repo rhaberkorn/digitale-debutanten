@@ -5,11 +5,13 @@
 public class SampOsc extends SndBuf {
 	1 => float __freq; /* pseudo-private */
 
-	fun float freq(float f)
+	fun float
+	freq(float f)
 	{
 		return f => __freq;
 	}
-	fun float freq()
+	fun float
+	freq()
 	{
 		return __freq;
 	}
