@@ -17,19 +17,21 @@ public class SampOsc extends SndBuf {
 	}
 
 	/*
-	 * Wait till next loop point but no longer than 100::ms,
+	 * Wait till next loop point but no longer than `max_latency',
 	 * so frequency changes get applied with a maximum of 100::ms latency.
 	 * NOTE: Due to a ChucK bug, simply killing and restarting the shred
 	 * does not work very well.
 	 */
+	100::ms => dur max_latency;
+
 	fun void
 	__loop() /* pseudo-private */
 	{
 		now => time last_trigger;
 
 		while (second/__freq => dur interval) {
-			if (last_trigger+interval - now > 100::ms) {
-				100::ms => now;
+			if (last_trigger+interval - now > max_latency) {
+				max_latency => now;
 			} else {
 				interval +=> last_trigger;
 				if (last_trigger >= now)
