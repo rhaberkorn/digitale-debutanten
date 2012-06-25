@@ -1,4 +1,5 @@
 /* Includes */
+Machine.add("lib/LiSaX.ck");
 Machine.add("lib/SampOsc.ck");
 Machine.add("lib/Clipper.ck");
 Machine.add("lib/Element.ck");
