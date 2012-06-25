@@ -77,7 +77,7 @@ for (0 => int i; i < Bus.oscope.cap(); i++)
 /*
  * jack.scope configuration
  */
-"oscope" => NanoEvent.new @=> NanoEvent @nanoev;
+"oscope" => NanoEvent.init @=> NanoEvent @nanoev;
 
 while (nanoev => now) {
 	if ("modeToggle" => nanoev.isControl) {

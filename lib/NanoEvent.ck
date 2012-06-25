@@ -1,16 +1,29 @@
 /*
+ * ChucK is so buggy, it hurts...
+ * You just cannot declare plain static string arrays, so
+ * we must wrap them in "real" objects
+ */
+class String {
+	string v;
+}
+class StringArray {
+	String @v[];
+}
+
+/*
  * nanoKONTROL event class
  */
 public class NanoEvent extends Event {
 	/* map channel (0-15) to scene name */
-	static string @channelToScene[];
+	static String @__channelToScene[]; /* pseudo-private */
 	/* map scene name and control id (0-255) to control name */
-	static string @controlToName[][];
+	static StringArray @__controlToName[]; /* pseudo-private */
 
 	string wantScene;
 
 	string scene;
 	string control;
+	int CCId;
 	float value;
 
 	fun int
@@ -69,18 +82,19 @@ public class NanoEvent extends Event {
 
 		while (min => now) {
 			while (MidiMsg msg => min.recv) {
-				channelToScene[msg.data1 & 0x0F] @=> scene;
+				__channelToScene[msg.data1 & 0x0F].v @=> scene;
 				if (scene == null) {
-					<<< "Unknown channel", msg.data & 0x0F >>>;
+					<<< "Unknown channel", msg.data1 & 0x0F >>>;
 					msg.data1 & 0x0F => Std.itoa @=> scene;
 				}
 
 				msg.data1 & 0xF0 => int cmd;
+				msg.data2 => CCId;
 
-				controlToName[scene][msg.data2] @=> control;
+				__controlToName[scene].v[CCId].v @=> control;
 				if (control == null) {
-					<<< "Unknown controller", msg.data2 >>>;
-					msg.data2 => Std.itoa @=> control;
+					<<< "Unknown controller", CCId >>>;
+					CCId => Std.itoa @=> control;
 				}
 
 				(msg.data3 $ float)/127 => value;
@@ -94,7 +108,7 @@ public class NanoEvent extends Event {
 	spork ~ __midi_loop(0);
 
 	fun static NanoEvent @
-	new(string scene)
+	init(string scene) /* pseudo-constructor */
 	{
 		NanoEvent obj;
 
@@ -106,18 +120,20 @@ public class NanoEvent extends Event {
 	fun static void
 	registerScene(int channel, string name)
 	{
-		name @=> channelToScene[channel];
+		name @=> __channelToScene[channel].v;
+		new StringArray @=> __controlToName[name];
+		new String[0x100] @=> __controlToName[name].v;
 	}
 
 	fun static void
 	registerControl(string sceneName, int id, string controlName)
 	{
-		controlName @=> controlToName[sceneName][id];
+		controlName @=> __controlToName[sceneName].v[id].v;
 	}
 }
 /* static initialization */
-new string[0x0F] @=> NanoEvent.channelToScene;
-new string[0][0xFF] @=> NanoEvent.controlToName;
+new String[0x10] @=> NanoEvent.__channelToScene;
+new StringArray[0] @=> NanoEvent.__controlToName;
 
 /*
  * global mappings
@@ -131,6 +147,9 @@ NanoEvent.registerControl("primary", 14, "feedbackDistKnob");
 NanoEvent.registerControl("primary", 02, "feedbackPitchSlider");
 NanoEvent.registerControl("primary", 03, "feedbackPregainSlider");
 NanoEvent.registerControl("primary", 15, "feedbackGainKnob");
+
+for (23 => int i; i <= 29; i++)
+	NanoEvent.registerControl("primary", i, "chooseSampleButton#"+i);
 
 fun void
 registerLFO(string scene)
@@ -148,10 +167,16 @@ registerLFO(string scene)
 "primary" => registerLFO;
 "secondary" => registerLFO;
 
-NanoEvent.registerControl("secondary", 44, "recordToggle");
-NanoEvent.registerControl("secondary", 45, "playButton");
-NanoEvent.registerControl("secondary", 46, "stopButton");
-NanoEvent.registerControl("secondary", 49, "loopToggle");
+fun void
+registerTransport(string scene)
+{
+	NanoEvent.registerControl(scene, 44, "recordToggle");
+	NanoEvent.registerControl(scene, 45, "playButton");
+	NanoEvent.registerControl(scene, 46, "stopButton");
+	NanoEvent.registerControl(scene, 49, "loopToggle");
+}
+"primary" => registerTransport;
+"secondary" => registerTransport;
 
 NanoEvent.registerControl("oscope", 67, "modeToggle");
 NanoEvent.registerControl("oscope", 76, "fillToggle");

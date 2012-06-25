@@ -4,6 +4,7 @@
  */
 Clipper clipper;
 adc.chan(0) => Gain pregain => Echo echo => Gain amp => clipper.input;
+clipper.output => Bus.channels[0];
 clipper.output => Bus.out_left;
 clipper.output => Bus.out_right;
 clipper.output => Delay del => amp;
@@ -35,7 +36,7 @@ adc.chan(1) => Bus.out_right;
  * Mic/effect configuration via MIDI
  */
 
-"primary" => NanoEvent.new @=> NanoEvent @nanoev;
+"primary" => NanoEvent.init @=> NanoEvent @nanoev;
 
 while (nanoev => now) {
 	if ("feedbackDistKnob" => nanoev.isControl) {

@@ -75,7 +75,7 @@ Shred @playback_shred;
 /*
  * Recorder configuration via MIDI
  */
-"secondary" => NanoEvent.new @=> NanoEvent @nanoev;
+"secondary" => NanoEvent.init @=> NanoEvent @nanoev;
 
 while (nanoev => now) {
 	if ("recordToggle" => nanoev.isControl) {
