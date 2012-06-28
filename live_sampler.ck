@@ -3,11 +3,16 @@
  */
 LiSaX lisa[7];
 
-for (0 => int i; i < lisa.cap(); i++) {
-	10::second => lisa[i].duration;
-	lisa[i].duration() => lisa[i].loopEndRec;
-}
+/* stock samples */
 "samples/stier_loop.wav" => lisa[0].read;
+
+for (0 => int i; i < lisa.cap(); i++) {
+	if (lisa[i].duration() == 0::samp)
+		10::second => lisa[i].duration;
+	lisa[i].duration() => lisa[i].loopEnd;
+	lisa[i].duration() => lisa[i].loopEndRec;
+	0 => lisa[i].loop;
+}
 
 for (0 => int i; i < lisa.cap(); i++) {
 	Bus.channels[0] => lisa[i] => Bus.out_left;

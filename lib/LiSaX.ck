@@ -8,9 +8,16 @@ public class LiSaX extends LiSa {
 		SndBuf buf;
 
 		file => buf.read;
+		/* buf.samples() returns number of frames (or samples in one channel) */
 		buf.samples()::samp => duration;
 
 		for (0 => int i; i < buf.samples(); i++)
-			valueAt(i => buf.valueAt, i::samp);
+			/*
+			 * Only get the first channel's data.
+			 * Still broken for stereo files probably because a
+			 * ChucK bug prevents buf.valueAt(i) to work for
+			 * i > buf.samples()
+			 */
+			valueAt(i * buf.channels() => buf.valueAt, i::samp);
 	}
 }
