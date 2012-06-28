@@ -83,7 +83,7 @@ public class NanoEvent extends Event {
 		while (min => now) {
 			while (MidiMsg msg => min.recv) {
 				__channelToScene[msg.data1 & 0x0F].v @=> scene;
-				if (scene == null) {
+				if (scene == "") {
 					<<< "Unknown channel", msg.data1 & 0x0F >>>;
 					msg.data1 & 0x0F => Std.itoa @=> scene;
 				}
@@ -92,14 +92,14 @@ public class NanoEvent extends Event {
 				msg.data2 => CCId;
 
 				__controlToName[scene].v[CCId].v @=> control;
-				if (control == null) {
+				if (control == "") {
 					<<< "Unknown controller", CCId >>>;
 					CCId => Std.itoa @=> control;
 				}
 
 				(msg.data3 $ float)/127 => value;
 
-				if (cmd == 0xB0 && (wantScene == null || scene == wantScene))
+				if (cmd == 0xB0 && (wantScene == "" || scene == wantScene))
 				    	broadcast();
 			}
 		}
@@ -120,6 +120,11 @@ public class NanoEvent extends Event {
 	fun static void
 	registerScene(int channel, string name)
 	{
+		if (__channelToScene[channel].v != "")
+			<<< "Warning: Already registered channel", channel >>>;
+		if (__controlToName[name] != null)
+			<<< "Warning: Already registered scene name", name >>>;
+
 		name @=> __channelToScene[channel].v;
 		new StringArray @=> __controlToName[name];
 		new String[0x100] @=> __controlToName[name].v;
@@ -128,6 +133,10 @@ public class NanoEvent extends Event {
 	fun static void
 	registerControl(string sceneName, int id, string controlName)
 	{
+		if (__controlToName[sceneName].v[id].v != "")
+			<<< "Warning: Already registered control", id,
+			    "on scene", sceneName >>>;
+
 		controlName @=> __controlToName[sceneName].v[id].v;
 	}
 }
@@ -149,7 +158,9 @@ NanoEvent.registerControl("primary", 03, "feedbackPregainSlider");
 NanoEvent.registerControl("primary", 15, "feedbackGainKnob");
 
 for (23 => int i; i <= 29; i++)
-	NanoEvent.registerControl("primary", i, "chooseSampleButton#"+i);
+	NanoEvent.registerControl("primary", i, "samplerBankButton#"+i);
+NanoEvent.registerControl("primary", 19, "samplerVolumeKnob");
+NanoEvent.registerControl("primary", 08, "samplerPitchSlider");
 
 fun void
 registerLFO(string scene)

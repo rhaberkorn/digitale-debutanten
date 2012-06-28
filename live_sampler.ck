@@ -1,22 +1,26 @@
 /*
- * Live (and stock) sampler based on LiSa
+ * Live (and stock) sampler based on LiSaX (LiSa)
+ * in-port: Bus.channels[0]
  */
+
 LiSaX lisa[7];
+Gain amp => Bus.out_left;
+amp => Bus.out_right;
 
 /* stock samples */
 "samples/stier_loop.wav" => lisa[0].read;
 
 for (0 => int i; i < lisa.cap(); i++) {
-	if (lisa[i].duration() == 0::samp)
-		10::second => lisa[i].duration;
-	lisa[i].duration() => lisa[i].loopEnd;
-	lisa[i].duration() => lisa[i].loopEndRec;
+	if (lisa[i].duration() == 0::samp) {
+		30::second => lisa[i].duration;
+	} else {
+		lisa[i].duration() => lisa[i].loopEnd;
+		lisa[i].duration() => lisa[i].loopEndRec;
+	}
 	0 => lisa[i].loop;
-}
 
-for (0 => int i; i < lisa.cap(); i++) {
-	Bus.channels[0] => lisa[i] => Bus.out_left;
-	lisa[i] => Bus.out_right;
+	/* patch */
+	Bus.channels[0] => lisa[i] => amp;
 }
 
 lisa[0] @=> LiSaX @currentSample;
@@ -29,14 +33,23 @@ lisa[0] @=> LiSaX @currentSample;
 while (nanoev => now) {
 	if ("recordToggle" => nanoev.isControl) {
 		if (nanoev.getBool()) {
-			currentSample.loop() => currentSample.loopRec;
-			currentSample.loopEnd() => currentSample.loopEndRec;
+			if (!currentSample.loop() ||
+			    currentSample.loopEndRec() == 0::samp) {
+				currentSample.duration() => currentSample.loopEndRec;
+				currentSample.clear();
+			} else {
+				currentSample.loopEnd() => currentSample.loopEndRec;
+			}
 			0::samp => currentSample.recPos;
 		} else if (!currentSample.loopRec() ||
 			   currentSample.loopEnd() == 0::samp) {
 			currentSample.recPos() => currentSample.loopEnd;
 		}
-		nanoev.getBool() => currentSample.record;
+
+		if (currentSample.loop()) {
+			nanoev.getBool() => currentSample.loopRec;
+		} else
+			nanoev.getBool() => currentSample.record;
 	} else if ("playButton" => nanoev.isControl) {
 		if (nanoev.getBool()) {
 			0::samp => currentSample.playPos;
@@ -47,6 +60,10 @@ while (nanoev => now) {
 			0 => currentSample.play;
 	} else if ("loopToggle" => nanoev.isControl) {
 		nanoev.getBool() => currentSample.loop;
+	} else if ("samplerVolumeKnob" => nanoev.isControl) {
+		nanoev.getFloat(10) => amp.gain;
+	} else if ("samplerPitchSlider" => nanoev.isControl) {
+		nanoev.getFloat(2) => currentSample.rate;
 	} else if (nanoev.CCId >= 23 && nanoev.CCId <= 29) {
 		/* chooseSampleButton#CCId pressed */
 		lisa[nanoev.CCId - 23] @=> currentSample;
