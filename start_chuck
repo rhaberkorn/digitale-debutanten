@@ -11,6 +11,5 @@ jack.scope -n 3 -w 512 -b 96512 >/dev/null &
 
 # ChucK server
 # NOTE: Last three output ports are for jack.scope
-LD_LIBRARY_PATH=/usr/local/lib32 \
-chuck --srate44100 --in3 --out7 --loop lib.ck
+chuck --srate:44100 --in:3 --out:7 --loop lib.ck
 
