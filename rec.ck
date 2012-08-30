@@ -1,23 +1,23 @@
 /*
  * dac master wave recorder
- * arguments: <base_filename> (default "out")
- * will write <base_filename>_left.wav, <base_filename>_right.wav
+ * arguments: <filename> (default: auto)
  */
 
 if (me.args() > 1)
 	me.exit();
 
-"out" => string filename;
+"special:auto" => string filename;
 if (me.args() > 0)
 	me.arg(0) => filename;
 
-// pull samples from the dac
-dac.chan(0) => WvOut out_left => blackhole;
-dac.chan(1) => WvOut out_right => blackhole;
+/* pull samples from the dac */
+WvOut2 out => blackhole;
+"recording" => out.autoPrefix;
+filename => out.wavFilename;
 
-filename+"_left.wav" => out_left.wavFilename;
-filename+"_right.wav" => out_right.wavFilename;
+dac.chan(0) => out.left();
+dac.chan(1) => out.right();
 
-<<< "writing to files:", out_left.filename(), out_right.filename() >>>;
-
+/* keep recording as long as shred is running */
+null @=> out; /* BUG WORKAROUND: dereference "out" on shred exit */
 while (day => now);
