@@ -1,18 +1,20 @@
 /*
  * clip signal within -1 to 1 with simple UGens
  */
-public class Clipper {
-	Gain input; // chuck input signal to this
-	Gain output; // chuck this out to have the result
+public class Clipper extends ChubgraphStd {
+	/* calculate a from HalfRect(inlet + 1) */
+	Step __one; 1 => __one.next;
+	inlet => HalfRect __a;
+	__one => __a;
 
-	Step one; 1 => one.next;
-	input => HalfRect a;
-	one => a; // calculate a from HalfRect(input + 1)
-	one => Gain two; 2 => two.gain;
-	-1 => a.gain;
-	a => HalfRect b;
-	two => b; // calculate b from HalfRect(2 - HalfRect(input + 1))
-	-1 => b.gain;
-	one => output;
-	b => output; // the result we want: 1 - HalfRect(2 - HalfRect(input + 1))
+	/* calculate b from HalfRect(2 - HalfRect(inlet + 1)) */
+	Step __two; 2 => __two.next;
+	-1 => __a.gain;
+	__a => HalfRect __b;
+	__two => __b;
+
+	/* the result we want: 1 - HalfRect(2 - HalfRect(inlet + 1)) */
+	-1 => __b.gain;
+	__one => outlet;
+	__b => outlet;
 }
