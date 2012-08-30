@@ -1,7 +1,7 @@
 /*
  * clip signal within -1 to 1 with simple UGens
  */
-public class Clipper extends ChubgraphStd {
+public class ClipperGraph extends ChubgraphStd {
 	/* calculate a from HalfRect(inlet + 1) */
 	Step __one; 1 => __one.next;
 	inlet => HalfRect __a;
