@@ -13,6 +13,7 @@ public class LiSaX extends LiSa {
 
 		for (0 => int i; i < buf.samples(); i++)
 			/*
+			 * BUG WORKAROUND
 			 * Only get the first channel's data.
 			 * Still broken for stereo files probably because a
 			 * ChucK bug prevents buf.valueAt(i) to work for

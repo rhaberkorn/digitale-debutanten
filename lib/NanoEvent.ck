@@ -1,5 +1,5 @@
 /*
- * ChucK is so buggy, it hurts...
+ * BUG WORKAROUND
  * You just cannot declare plain static string arrays, so
  * we must wrap them in "real" objects
  */
