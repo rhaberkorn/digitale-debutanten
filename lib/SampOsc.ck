@@ -1,9 +1,11 @@
 /*
  * Sample based oscillator
- * NOTE: may not be frequency-synced!
  */
-public class SampOsc extends SndBuf {
+public class SampOsc extends ChubgraphStd {
+	inlet => blackhole;
+	inlet.last() => float __last_in; /* pseudo-private */
 	1 => float __freq; /* pseudo-private */
+	SndBuf __buf => outlet; /* pseudo-private */
 
 	fun float
 	freq(float f)
@@ -13,13 +15,34 @@ public class SampOsc extends SndBuf {
 	fun float
 	freq()
 	{
+		if (inlet.last() != __last_in)
+			inlet.last() => __last_in => __freq;
 		return __freq;
+	}
+
+	/*
+	 * __buf shortcuts
+	 */
+	fun void
+	read(string file)
+	{
+		file => __buf.read;
+	}
+	fun float
+	rate(float v)
+	{
+		return v => __buf.rate;
+	}
+	fun float
+	rate()
+	{
+		return __buf.rate();
 	}
 
 	/*
 	 * Wait till next loop point but no longer than `max_latency',
 	 * so frequency changes get applied with a maximum of 100::ms latency.
-	 * NOTE: Due to a ChucK bug, simply killing and restarting the shred
+	 * NOTE: Due to a ChucK bug (?), simply killing and restarting the shred
 	 * does not work very well.
 	 */
 	100::ms => dur max_latency;
@@ -29,16 +52,18 @@ public class SampOsc extends SndBuf {
 	{
 		now => time last_trigger;
 
-		while (second/__freq => dur interval) {
+		while (second/freq() => dur interval) {
 			if (last_trigger+interval - now > max_latency) {
 				max_latency => now;
 			} else {
 				interval +=> last_trigger;
 				if (last_trigger >= now)
 					last_trigger => now;
-				0 => pos;
+				0 => __buf.pos;
 			}
 		}
+
+		/* never reached */
 	}
 	spork ~ __loop();
 
