@@ -1,17 +1,19 @@
 /*
  * Configurable LFOs
  */
-UGen @lfo[3]; // FIXME: ChucK bug prevents elegant initialization with [new ..., ...]
+/* FIXME: ChucK bug prevents elegant initialization with [new ..., ...] */
+UGen @lfo[3];
 new SinOsc @=> lfo[0];
 new PulseOsc @=> lfo[1];
 new SampOsc @=> lfo[2];
-10 => lfo[2].gain; /* preamp, to get value range 0 to 1000 */
+/* BUG WORKAROUND: setting lfo[2].gain crashes */
+10 => (lfo[2] $ SampOsc).gain; /* preamp, to get value range 0 to 1000 */
 
 //lfo[2] => Bus.oscope[0];
 //0.1 => Bus.oscope[0].gain;
 
 Step lfo_freq;
-for (0 => int i; i < 2 /*lfo.cap()*/; i++)
+for (0 => int i; i < lfo.cap(); i++)
 	lfo_freq => lfo[i];
 
 0 => int cur_lfo;
@@ -86,8 +88,7 @@ while (nanoev => now) {
 	} else if ("lfoDepthSlider" => nanoev.isControl) {
 		nanoev.getFloat(100) => lfo_gain.gain;
 	} else if ("lfoFreqKnob" => nanoev.isControl) {
-		/* setting lfo_freq does not influence SampOsc! */
-		nanoev.getFloat(20) => lfo_freq.next => (lfo[2] $ SampOsc).freq;
+		nanoev.getFloat(20) => lfo_freq.next;
 	} else if ("lfoSinOscButton" => nanoev.isControl) {
 		if (nanoev.getBool())
 			0 => change_lfo;
