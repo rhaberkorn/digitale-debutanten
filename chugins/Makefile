@@ -6,7 +6,7 @@ LDFLAGS += -m32
 
 CXXFLAGS += $(CFLAGS)
 
-all : Clipper.chug
+all : Clipper.chug GainMod.chug
 
 %.chug : %.o
 	$(CXX) -shared $(LDFLAGS) -o $@ $^
