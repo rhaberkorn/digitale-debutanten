@@ -15,8 +15,8 @@ WvOut2 out => blackhole;
 "recording" => out.autoPrefix;
 filename => out.wavFilename;
 
-dac.chan(0) => out.left();
-dac.chan(1) => out.right();
+dac.chan(0) => out.left;
+dac.chan(1) => out.right;
 
 /* keep recording as long as shred is running */
 null @=> out; /* BUG WORKAROUND: dereference "out" on shred exit */
