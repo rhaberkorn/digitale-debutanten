@@ -11,7 +11,7 @@ jack.scope -n 3 -w 512 -b 96512 >/dev/null &
 
 # ChucK server
 # NOTE: Last three output ports are for jack.scope
-chuck $* \
+${CHUCK:-chuck} $* \
       --srate:44100 --in:3 --out:7 \
       --chugin-path:chugins/ \
       --loop lib.ck
