@@ -1,9 +1,7 @@
 CFLAGS ?= -O3
 
-CFLAGS += -m32
-CPPFLAGS += -I/usr/include/chuck -D__LINUX_JACK__
-LDFLAGS += -m32
-
+CFLAGS += -fPIC
+CPPFLAGS += -I/usr/include/chuck -D__UNIX_JACK__ -D__LINUX_JACK__
 CXXFLAGS += $(CFLAGS)
 
 all : Clipper.chug GainMod.chug
