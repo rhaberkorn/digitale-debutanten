@@ -1,13 +1,9 @@
 /*
  * BUG WORKAROUND
- * You just cannot declare plain static string arrays, so
- * we must wrap them in "real" objects
+ * n-dimensional arrays with first dimension only a map are broken
  */
-class String {
-	string v;
-}
 class StringArray {
-	String @v[];
+	string @v[];
 }
 
 /*
@@ -15,7 +11,7 @@ class StringArray {
  */
 public class NanoEvent extends Event {
 	/* map channel (0-15) to scene name */
-	static String @__channelToScene[]; /* pseudo-private */
+	static string @__channelToScene[]; /* pseudo-private */
 	/* map scene name and control id (0-255) to control name */
 	static StringArray @__controlToName[]; /* pseudo-private */
 
@@ -82,7 +78,7 @@ public class NanoEvent extends Event {
 
 		while (min => now) {
 			while (MidiMsg msg => min.recv) {
-				__channelToScene[msg.data1 & 0x0F].v @=> scene;
+				__channelToScene[msg.data1 & 0x0F] @=> scene;
 				if (scene == "") {
 					<<< "Unknown channel", msg.data1 & 0x0F >>>;
 					msg.data1 & 0x0F => Std.itoa @=> scene;
@@ -91,7 +87,7 @@ public class NanoEvent extends Event {
 				msg.data1 & 0xF0 => int cmd;
 				msg.data2 => CCId;
 
-				__controlToName[scene].v[CCId].v @=> control;
+				__controlToName[scene].v[CCId] @=> control;
 				if (control == "") {
 					<<< "Unknown controller", CCId >>>;
 					CCId => Std.itoa @=> control;
@@ -120,28 +116,28 @@ public class NanoEvent extends Event {
 	fun static void
 	registerScene(int channel, string name)
 	{
-		if (__channelToScene[channel].v != "")
+		if (__channelToScene[channel] != "")
 			<<< "Warning: Already registered channel", channel >>>;
 		if (__controlToName[name] != null)
 			<<< "Warning: Already registered scene name", name >>>;
 
-		name @=> __channelToScene[channel].v;
+		name @=> __channelToScene[channel];
 		new StringArray @=> __controlToName[name];
-		new String[0x100] @=> __controlToName[name].v;
+		new string[0x100] @=> __controlToName[name].v;
 	}
 
 	fun static void
 	registerControl(string sceneName, int id, string controlName)
 	{
-		if (__controlToName[sceneName].v[id].v != "")
+		if (__controlToName[sceneName].v[id] != "")
 			<<< "Warning: Already registered control", id,
 			    "on scene", sceneName >>>;
 
-		controlName @=> __controlToName[sceneName].v[id].v;
+		controlName @=> __controlToName[sceneName].v[id];
 	}
 }
 /* static initialization */
-new String[0x10] @=> NanoEvent.__channelToScene;
+new string[0x10] @=> NanoEvent.__channelToScene;
 new StringArray[0] @=> NanoEvent.__controlToName;
 
 /*
