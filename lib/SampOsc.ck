@@ -2,6 +2,8 @@
  * Sample based oscillator
  */
 public class SampOsc extends ChubgraphStd {
+	static string @__sourceDir; /* pseudo-private */
+
 	inlet => blackhole;
 	inlet.last() => float __last_in; /* pseudo-private */
 	1 => float __freq; /* pseudo-private */
@@ -57,7 +59,7 @@ public class SampOsc extends ChubgraphStd {
 				max_latency => now;
 			} else {
 				interval +=> last_trigger;
-				if (last_trigger >= now)
+				if (last_trigger > now)
 					last_trigger => now;
 				0 => __buf.pos;
 			}
@@ -67,7 +69,11 @@ public class SampOsc extends ChubgraphStd {
 	}
 	spork ~ __loop();
 
-	/* FIXME: not independant from cwd when instantiated */
-	"lib/pulse.wav" => read;
+	__sourceDir+"/pulse.wav" => read;
 	1 => rate;
 }
+/* static initialization */
+me.sourceDir() => SampOsc.__sourceDir;
+/* BUG WORKAROUND: me.sourceDir() == "" if VM is started with --loop */
+if (SampOsc.__sourceDir == "")
+	"lib" => SampOsc.__sourceDir;
