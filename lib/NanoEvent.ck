@@ -1,19 +1,11 @@
 /*
- * BUG WORKAROUND
- * n-dimensional arrays with first dimension only a map are broken
- */
-class StringArray {
-	string @v[];
-}
-
-/*
  * nanoKONTROL event class
  */
 public class NanoEvent extends Event {
 	/* map channel (0-15) to scene name */
 	static string @__channelToScene[]; /* pseudo-private */
 	/* map scene name and control id (0-255) to control name */
-	static StringArray @__controlToName[]; /* pseudo-private */
+	static string @__controlToName[][]; /* pseudo-private */
 
 	string wantScene;
 
@@ -87,7 +79,7 @@ public class NanoEvent extends Event {
 				msg.data1 & 0xF0 => int cmd;
 				msg.data2 => CCId;
 
-				__controlToName[scene].v[CCId] @=> control;
+				(__controlToName[scene])[CCId] @=> control;
 				if (control == "") {
 					<<< "Unknown controller", CCId >>>;
 					CCId => Std.itoa @=> control;
@@ -122,23 +114,22 @@ public class NanoEvent extends Event {
 			<<< "Warning: Already registered scene name", name >>>;
 
 		name @=> __channelToScene[channel];
-		new StringArray @=> __controlToName[name];
-		new string[0x100] @=> __controlToName[name].v;
+		new string[0x100] @=> __controlToName[name];
 	}
 
 	fun static void
 	registerControl(string sceneName, int id, string controlName)
 	{
-		if (__controlToName[sceneName].v[id] != "")
+		if ((__controlToName[sceneName])[id] != "")
 			<<< "Warning: Already registered control", id,
 			    "on scene", sceneName >>>;
 
-		controlName @=> __controlToName[sceneName].v[id];
+		controlName @=> (__controlToName[sceneName])[id];
 	}
 }
 /* static initialization */
 new string[0x10] @=> NanoEvent.__channelToScene;
-new StringArray[0] @=> NanoEvent.__controlToName;
+new string[0][0x100] @=> NanoEvent.__controlToName;
 
 /*
  * global mappings
