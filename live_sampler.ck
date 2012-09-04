@@ -20,7 +20,8 @@ for (0 => int i; i < lisa.cap(); i++) {
 	0 => lisa[i].loop;
 
 	/* patch */
-	Bus.channels[0] => lisa[i] => amp;
+	Bus.channels[0] => lisa[i];
+	lisa[i].chan(0) => amp;
 }
 
 lisa[0] @=> LiSaX @currentSample;
