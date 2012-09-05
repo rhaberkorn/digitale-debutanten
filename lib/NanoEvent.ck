@@ -79,7 +79,7 @@ public class NanoEvent extends Event {
 				msg.data1 & 0xF0 => int cmd;
 				msg.data2 => CCId;
 
-				(__controlToName[scene])[CCId] @=> control;
+				__controlToName[scene][CCId] @=> control;
 				if (control == "") {
 					<<< "Unknown controller", CCId >>>;
 					CCId => Std.itoa @=> control;
@@ -120,11 +120,11 @@ public class NanoEvent extends Event {
 	fun static void
 	registerControl(string sceneName, int id, string controlName)
 	{
-		if ((__controlToName[sceneName])[id] != "")
+		if (__controlToName[sceneName][id] != "")
 			<<< "Warning: Already registered control", id,
 			    "on scene", sceneName >>>;
 
-		controlName @=> (__controlToName[sceneName])[id];
+		controlName @=> __controlToName[sceneName][id];
 	}
 }
 /* static initialization */
