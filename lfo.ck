@@ -1,11 +1,10 @@
 /*
  * Configurable LFOs
  */
-/* FIXME: ChucK bug prevents elegant initialization with [new ..., ...] */
-UGen @lfo[3];
-new SinOsc @=> lfo[0];
-new PulseOsc @=> lfo[1];
-new SampOsc @=> lfo[2];
+[new SinOsc $ UGen,
+ new PulseOsc $ UGen,
+ new SampOsc $ UGen] @=> UGen @lfo[];
+
 /* BUG WORKAROUND: setting lfo[2].gain crashes */
 10 => (lfo[2] $ SampOsc).gain; /* preamp, to get value range 0 to 1000 */
 
@@ -18,9 +17,8 @@ for (0 => int i; i < lfo.cap(); i++)
 
 0 => int cur_lfo;
 
-UGen @osc[2];
-new SawOsc @=> osc[0];
-new PulseOsc @=> osc[1];
+[new SawOsc $ UGen,
+ new PulseOsc $ UGen] @=> UGen @osc[];
 
 0 => int cur_osc;
 
