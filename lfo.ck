@@ -32,6 +32,7 @@ Step base => lfo_dummy;
 //50::ms => echo.delay;
 //.3 => echo.mix;
 
+0 => rev.gain;
 1::second => rev.max;
 500::ms => rev.delay;
 0.5 => rev.mix;
