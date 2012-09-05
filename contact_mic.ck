@@ -2,12 +2,12 @@
  * contact mic
  * digital feedback loop
  */
-Clipper clipper;
-adc.chan(0) => Gain pregain => Echo echo => Gain amp => clipper.input;
-clipper.output => Bus.channels[0];
-clipper.output => Bus.out_left;
-clipper.output => Bus.out_right;
-clipper.output => Delay del => amp;
+adc.chan(0) => Gain pregain => Echo echo => Gain amp => Clipper clipper;
+clipper => Delay del => amp;
+clipper => Gain master => Bus.out_left; master => Bus.out_right;
+clipper => Bus.channels[0]; // live-sampler
+
+0.5 => master.gain;
 
 // mic pre-amplification - don't contribute to feedback loop
 6 => pregain.gain;
