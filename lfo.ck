@@ -1,9 +1,7 @@
 /*
  * Configurable LFOs
  */
-[new SinOsc $ UGen,
- new PulseOsc $ UGen,
- new SampOsc $ UGen] @=> UGen @lfo[];
+[new SinOsc, new PulseOsc, new SampOsc] @=> UGen @lfo[];
 
 /* BUG WORKAROUND: setting lfo[2].gain crashes */
 10 => (lfo[2] $ SampOsc).gain; /* preamp, to get value range 0 to 1000 */
@@ -17,8 +15,7 @@ for (0 => int i; i < lfo.cap(); i++)
 
 0 => int cur_lfo;
 
-[new SawOsc $ UGen,
- new PulseOsc $ UGen] @=> UGen @osc[];
+[new SawOsc, new PulseOsc] @=> UGen @osc[];
 
 0 => int cur_osc;
 
