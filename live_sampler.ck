@@ -18,6 +18,7 @@ for (0 => int i; i < lisa.cap(); i++) {
 		lisa[i].duration() => lisa[i].loopEndRec;
 	}
 	0 => lisa[i].loop;
+	1 => lisa[i].maxVoices;
 
 	/* patch */
 	Bus.channels[0] => lisa[i];
