@@ -79,7 +79,10 @@ public class NanoEvent extends Event {
 				msg.data1 & 0xF0 => int cmd;
 				msg.data2 => CCId;
 
-				__controlToName[scene][CCId] @=> control;
+				if (__controlToName[scene] != null)
+					__controlToName[scene][CCId] @=> control;
+				else
+					"" @=> control;
 				if (control == "") {
 					<<< "Unknown controller", CCId >>>;
 					CCId => Std.itoa @=> control;
