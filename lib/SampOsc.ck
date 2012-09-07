@@ -1,7 +1,7 @@
 /*
  * Sample based oscillator
  */
-public class SampOsc extends ChubgraphStd {
+public class SampOsc extends Chubgraph {
 	static string @__sourceDir; /* pseudo-private */
 
 	inlet => blackhole;
