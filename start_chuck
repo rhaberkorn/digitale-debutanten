@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# kill possibly running stuff
+pkill alsa_in
+pkill alsa_out
+pkill jack.scope
+
 # USB sound card JACK ports
 alsa_in -d hw:default -c 1 -q 0 >/dev/null &
 alsa_out -d hw:default -c 2 -q 0 >/dev/null &
