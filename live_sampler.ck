@@ -62,7 +62,7 @@ while (nanoev => now) {
 	} else if ("loopToggle" => nanoev.isControl) {
 		nanoev.getBool() => currentSample.loop;
 	} else if ("samplerVolumeKnob" => nanoev.isControl) {
-		nanoev.getFloat(10) => currentSampler.gain;
+		nanoev.getFloat(10) => currentSample.gain;
 	} else if ("samplerPitchSlider" => nanoev.isControl) {
 		nanoev.getFloat(2) => currentSample.rate;
 	} else if (nanoev.CCId >= 23 && nanoev.CCId <= 29) {
