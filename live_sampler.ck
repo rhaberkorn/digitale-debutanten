@@ -7,8 +7,17 @@ LiSaX lisa[7];
 Gain amp => Bus.out_left;
 amp => Bus.out_right;
 
+fun void
+read(int i, string file)
+{
+	chout <= "Loading \"" <= file <= "\" into sample bank " <= i <= "... ";
+	chout.flush();
+	file => lisa[i].read;
+	chout <= "Done!" <= IO.newline();
+}
+
 /* stock samples */
-"samples/stier_loop.wav" => lisa[0].read;
+read(0, "samples/stier_loop_stereo.wav");
 
 for (0 => int i; i < lisa.cap(); i++) {
 	if (lisa[i].duration() == 0::samp) {
