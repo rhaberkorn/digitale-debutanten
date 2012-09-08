@@ -18,11 +18,15 @@ for (0 => int i; i < lisa.cap(); i++) {
 		lisa[i].duration() => lisa[i].loopEndRec;
 	}
 	0 => lisa[i].loop;
+	/* setting this to 1 if we only need one voice improves performance */
 	1 => lisa[i].maxVoices;
 
 	/* patch */
-	Bus.channels[0] => lisa[i];
-	lisa[i].chan(0) => amp;
+	/*
+	 * NOTE: for multichannel LiSa it's more efficient to only chuck
+	 * channel 0: lisa[i].chan(0) => amp;
+	 */
+	Bus.channels[0] => lisa[i] => amp;
 }
 
 lisa[0] @=> LiSaX @currentSample;
