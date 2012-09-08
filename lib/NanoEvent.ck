@@ -64,7 +64,8 @@ public class NanoEvent extends Event {
 		MidiIn min;
 
 		if (!min.open(device)) {
-			<<< "Cannot open MIDI device", device >>>;
+			cherr <= "Cannot open MIDI device " <= device
+			      <= IO.newline();
 			me.exit();
 		}
 
@@ -72,7 +73,9 @@ public class NanoEvent extends Event {
 			while (MidiMsg msg => min.recv) {
 				__channelToScene[msg.data1 & 0x0F] @=> scene;
 				if (scene == "") {
-					<<< "Unknown channel", msg.data1 & 0x0F >>>;
+					cherr <= "Unknown channel "
+					      <= (msg.data1 & 0x0F)
+					      <= IO.newline();
 					msg.data1 & 0x0F => Std.itoa @=> scene;
 				}
 
@@ -84,7 +87,8 @@ public class NanoEvent extends Event {
 				else
 					"" @=> control;
 				if (control == "") {
-					<<< "Unknown controller", CCId >>>;
+					cherr <= "Unknown controller " <= CCId
+					      <= IO.newline();
 					CCId => Std.itoa @=> control;
 				}
 
@@ -112,9 +116,11 @@ public class NanoEvent extends Event {
 	registerScene(int channel, string name)
 	{
 		if (__channelToScene[channel] != "")
-			<<< "Warning: Already registered channel", channel >>>;
+			cherr <= "Warning: Already registered channel "
+			      <= channel <= IO.newline();
 		if (__controlToName[name] != null)
-			<<< "Warning: Already registered scene name", name >>>;
+			cherr <= "Warning: Already registered scene name \""
+			      <= name <= "\"" <= IO.newline();
 
 		name @=> __channelToScene[channel];
 		new string[0x100] @=> __controlToName[name];
@@ -124,8 +130,9 @@ public class NanoEvent extends Event {
 	registerControl(string sceneName, int id, string controlName)
 	{
 		if (__controlToName[sceneName][id] != "")
-			<<< "Warning: Already registered control", id,
-			    "on scene", sceneName >>>;
+			cherr <= "Warning: Already registered control " <= id
+			      <= " on scene \"" <= sceneName <= "\""
+			      <= IO.newline();
 
 		controlName @=> __controlToName[sceneName][id];
 	}
