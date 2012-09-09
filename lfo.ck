@@ -2,27 +2,16 @@
  * Configurable LFOs
  */
 [new SinOsc, new PulseOsc, new SampOsc] @=> UGen @lfo[];
-
-/* BUG WORKAROUND: setting lfo[2].gain crashes */
-10 => (lfo[2] $ SampOsc).gain; /* preamp, to get value range 0 to 1000 */
+lfo[0] @=> UGen @cur_lfo;
 
 //lfo[2] => Bus.oscope[0];
 //0.1 => Bus.oscope[0].gain;
 
-Step lfo_freq;
-for (0 => int i; i < lfo.cap(); i++)
-	lfo_freq => lfo[i];
-
-0 => int cur_lfo;
-
 [new SawOsc, new PulseOsc] @=> UGen @osc[];
+osc[0] @=> UGen @cur_osc;
 
-0 => int cur_osc;
-
-/* s.freq = lfo.freq*lfo.gain + base.value */
-lfo[cur_lfo] => Gain lfo_gain => Gain lfo_dummy => osc[cur_osc] => Echo rev => Bus.out_left;
+Step lfo_freq => cur_lfo => Scale lfo_scale => cur_osc => Echo rev => Bus.out_left;
 rev => Bus.out_right;
-Step base => lfo_dummy;
 
 //50::ms => echo.delay;
 //.3 => echo.mix;
@@ -33,32 +22,37 @@ Step base => lfo_dummy;
 0.5 => rev.mix;
 
 10 => lfo_freq.next;
-400 => base.next;
-80 => lfo_gain.gain;
+320 => float lfo_pitch;
+80 => float lfo_depth;
+
+lfo_scale.out(lfo_pitch, lfo_pitch+lfo_depth);
 
 //10 => lfo.harmonics;
 
 fun void
 change_lfo(int new_lfo)
 {
-	/* unchuck lfo */
-	lfo[cur_lfo] =< lfo_gain;
-	/* rechuck lfo */
-	lfo[new_lfo => cur_lfo] => lfo_gain;
+	/* unchuck current lfo */
+	lfo_freq =< cur_lfo =< lfo_scale;
+	/* chuck new lfo */
+	lfo_freq => lfo[new_lfo] @=> cur_lfo => lfo_scale;
 
-	if (cur_lfo == 2 /* SampOsc */) {
-		/* switch off base freq */
-		0 => base.gain;
+	if (new_lfo == 2 /* SampOsc */) {
+		lfo_scale.in(0, 1);
+		10 => lfo_scale.gain; /* value range [0, 1000] if pitch == 0 */
 	} else {
-		1 => base.gain;
+		lfo_scale.in(-1, 1);
+		1 => lfo_scale.gain;
 	}
 }
 
 fun void
 change_osc(int new_osc)
 {
-	lfo_dummy =< osc[cur_osc] =< rev;
-	lfo_dummy => osc[new_osc => cur_osc] => rev;
+	/* unchuck current oscillator */
+	lfo_scale =< cur_osc =< rev;
+	/* chuck new oscillator */
+	lfo_scale => osc[new_osc] @=> cur_osc => rev;
 }
 
 /*
@@ -78,13 +72,16 @@ while (nanoev => now) {
 	if ("lfoVolumeKnob" => nanoev.isControl) {
 		nanoev.getFloat() => rev.gain;
 	} else if ("lfoPitchSlider" => nanoev.isControl) {
-		nanoev.getFloat(100, 1000) => base.next;
-		/* base freq slider is sample rate for SampOsc */
-		nanoev.getFloat(2) => (lfo[2] $ SampOsc).rate;
+		nanoev.getFloat(0, 1000) => lfo_pitch;
+		lfo_scale.out(lfo_pitch, lfo_pitch+lfo_depth);
 	} else if ("lfoDepthSlider" => nanoev.isControl) {
-		nanoev.getFloat(100) => lfo_gain.gain;
+		nanoev.getFloat(100) => lfo_depth;
+		lfo_scale.out(lfo_pitch, lfo_pitch+lfo_depth);
 	} else if ("lfoFreqKnob" => nanoev.isControl) {
 		nanoev.getFloat(20) => lfo_freq.next;
+	} else if ("lfoRateKnob" => nanoev.isControl) {
+		/* sample rate for SampOsc */
+		nanoev.getFloat(2) => (lfo[2] $ SampOsc).rate;
 	} else if ("lfoSinOscButton" => nanoev.isControl) {
 		if (nanoev.getBool())
 			0 => change_lfo;

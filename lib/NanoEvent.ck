@@ -166,6 +166,7 @@ registerLFO(string scene)
 	NanoEvent.registerControl(scene, 13, "lfoPitchSlider");
 	NanoEvent.registerControl(scene, 12, "lfoDepthSlider");
 	NanoEvent.registerControl(scene, 21, "lfoFreqKnob");
+	NanoEvent.registerControl(scene, 20, "lfoRateKnob");
 	NanoEvent.registerControl(scene, 31, "lfoSinOscButton");
 	NanoEvent.registerControl(scene, 41, "lfoPulseOscButton");
 	NanoEvent.registerControl(scene, 30, "lfoSampOscButton");
