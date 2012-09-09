@@ -1,7 +1,7 @@
 /*
- * clip signal using a Ghugen
+ * clip signal within -1 to 1 using a Ghugen
  */
-public class ClipperGen extends Chugen {
+public class Clipper extends Chugen {
 	fun float
 	tick(float in)
 	{
