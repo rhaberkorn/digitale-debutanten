@@ -7,6 +7,34 @@ public class NanoEvent extends Event {
 	/* map scene name and control id (0-255) to control name */
 	static string @__controlToName[][]; /* pseudo-private */
 
+	class Port extends Step {
+		fun void
+		fetch(int device, string scene, string control)
+		{
+			MidiIn min;
+
+			if (!min.open(device)) {
+				cherr <= "Cannot open MIDI device " <= device
+				      <= IO.newline();
+				me.exit();
+			}
+			chout <= "Opened MIDI device " <= device <= " (" <= min.name() <= ")"
+			      <= IO.newline();
+
+			while (min => now) {
+				while (MidiMsg msg => min.recv) {
+					if (NanoEvent.__channelToScene[msg.data1 & 0x0F] == scene &&
+					    NanoEvent.__controlToName[scene] != null &&
+					    NanoEvent.__controlToName[scene][msg.data2] == control)
+						msg.data3*2/127.0 - 1 => next;
+				}
+			}
+			/* not reached */
+		}
+	}
+
+	/* by default open MIDI Through port, actual connection is done by Jack */
+	0 => int device;
 	string wantScene;
 
 	string scene;
@@ -23,6 +51,17 @@ public class NanoEvent extends Event {
 	isControl(string c)
 	{
 		return control == c;
+	}
+
+	fun Step @
+	getPort(string control)
+	{
+		if (wantScene == "")
+			return null;
+
+		Port p;
+		spork ~ p.fetch(device, wantScene, control);
+		return p;
 	}
 
 	fun float
@@ -59,7 +98,7 @@ public class NanoEvent extends Event {
 	}
 
 	fun void
-	__midi_loop(int device) /* pseudo-private */
+	__midi_loop() /* pseudo-private */
 	{
 		MidiIn min;
 
@@ -68,6 +107,8 @@ public class NanoEvent extends Event {
 			      <= IO.newline();
 			me.exit();
 		}
+		chout <= "Opened MIDI device " <= device <= " (" <= min.name() <= ")"
+		      <= IO.newline();
 
 		while (min => now) {
 			while (MidiMsg msg => min.recv) {
@@ -92,16 +133,26 @@ public class NanoEvent extends Event {
 					CCId => Std.itoa @=> control;
 				}
 
-				(msg.data3 $ float)/127 => value;
+				msg.data3/127.0 => value;
 
-				if (cmd == 0xB0 && (wantScene == "" || scene == wantScene))
+				if (cmd == 0xB0 &&
+				    (wantScene == "" || scene == wantScene))
 				    	broadcast();
 			}
 		}
 	}
-	/* always open MIDI Through port, actual connection is done by Jack */
-	spork ~ __midi_loop(0);
+	spork ~ __midi_loop();
 
+	fun static NanoEvent @
+	init(int device, string scene) /* pseudo-constructor */
+	{
+		NanoEvent obj;
+
+		device => obj.device;
+		scene @=> obj.wantScene;
+
+		return obj;
+	}
 	fun static NanoEvent @
 	init(string scene) /* pseudo-constructor */
 	{

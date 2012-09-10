@@ -10,8 +10,21 @@ lfo[0] @=> UGen @cur_lfo;
 [new SawOsc, new PulseOsc] @=> UGen @osc[];
 osc[0] @=> UGen @cur_osc;
 
-Step lfo_freq => cur_lfo => Scale lfo_scale => cur_osc => Echo rev => Bus.out_left;
-rev => Bus.out_right;
+/*
+ * LFO configuration via MIDI
+ */
+if (me.args() > 1)
+	me.exit();
+
+NanoEvent nanoev;
+
+/* first param: scene name */
+"primary" @=> nanoev.wantScene;
+if (me.args() > 0)
+	me.arg(0) @=> nanoev.wantScene;
+
+nanoev.getPort("lfoFreqKnob") => Scale lfo_freq => cur_lfo => Scale lfo_scale;
+lfo_scale => cur_osc => Echo rev => Bus.out_left; rev => Bus.out_right;
 
 //50::ms => echo.delay;
 //.3 => echo.mix;
@@ -21,13 +34,11 @@ rev => Bus.out_right;
 500::ms => rev.delay;
 0.5 => rev.mix;
 
-10 => lfo_freq.next;
+20 => lfo_freq.out;
 320 => float lfo_pitch;
 80 => float lfo_depth;
 
 lfo_scale.out(lfo_pitch, lfo_pitch+lfo_depth);
-
-//10 => lfo.harmonics;
 
 fun void
 change_lfo(int new_lfo)
@@ -55,19 +66,6 @@ change_osc(int new_osc)
 	lfo_scale => osc[new_osc] @=> cur_osc => rev;
 }
 
-/*
- * LFO configuration via MIDI
- */
-if (me.args() > 1)
-	me.exit();
-
-NanoEvent nanoev;
-
-/* first param: scene name */
-"primary" @=> nanoev.wantScene;
-if (me.args() > 0)
-	me.arg(0) @=> nanoev.wantScene;
-
 while (nanoev => now) {
 	if ("lfoVolumeKnob" => nanoev.isControl) {
 		nanoev.getFloat() => rev.gain;
@@ -77,8 +75,6 @@ while (nanoev => now) {
 	} else if ("lfoDepthSlider" => nanoev.isControl) {
 		nanoev.getFloat(100) => lfo_depth;
 		lfo_scale.out(lfo_pitch, lfo_pitch+lfo_depth);
-	} else if ("lfoFreqKnob" => nanoev.isControl) {
-		nanoev.getFloat(20) => lfo_freq.next;
 	} else if ("lfoRateKnob" => nanoev.isControl) {
 		/* sample rate for SampOsc */
 		nanoev.getFloat(2) => (lfo[2] $ SampOsc).rate;
