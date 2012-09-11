@@ -39,6 +39,9 @@ public class GenEvent extends Event {
 
 	/*
 	 * Getter functions to scale `value'
+	 * Note that "min" can be greater than "max", resulting in the
+	 * desired inversion of scaling
+	 * (just like min < max and 1-value was used).
 	 */
 	fun float
 	getFloat()

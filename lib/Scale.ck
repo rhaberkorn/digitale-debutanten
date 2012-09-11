@@ -14,6 +14,11 @@ public class Scale extends Chubgraph {
 	fun void
 	__update() /* pseudo-private */
 	{
+		/*
+		 * Note that "__out_from" can be greater than "__out_to", resulting in the
+		 * desired inversion of scaling
+		 * (just like __out_from < __out_to and -SAMPLE was used).
+		 */
 		(__out_to-__out_from)/(__in_to-__in_from) => inlet.gain;
 		__out_from - __in_from*inlet.gain() => __base.next;
 	}
