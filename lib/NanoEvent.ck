@@ -7,60 +7,21 @@ public class NanoEvent extends GenEvent {
 	/* map scene name and control id (0-255) to control name */
 	static string @__controlToName[][];	/* pseudo-private */
 
-	class Port extends Step {
-		fun void
-		fetch(int device, string scene, string control)
-		{
-			MidiIn min;
-
-			if (!min.open(device)) {
-				cherr <= "Cannot open MIDI device " <= device
-				      <= IO.newline();
-				me.exit();
-			}
-			chout <= "Opened MIDI device " <= device <= " (" <= min.name() <= ")"
-			      <= IO.newline();
-
-			while (min => now) {
-				while (MidiMsg msg => min.recv) {
-					if (NanoEvent.__channelToScene[msg.data1 & 0x0F] == scene &&
-					    NanoEvent.__controlToName[scene] != null &&
-					    NanoEvent.__controlToName[scene][msg.data2] == control)
-						msg.data3*2/127.0 - 1 => next;
-				}
-			}
-			/* not reached */
-		}
-	}
-
-	/* by default open MIDI Through port, actual connection is done by Jack */
+	/*
+	 * Should be "MIDI Through Port-0" (actual connection is done by Jack)
+	 * Can be changed by constructor since __midi_loop() starts only
+	 * when constructing shred passes time
+	 */
 	0 => int device;
 	string wantScene;
 
 	string scene;
-	string control;
 	int CCId;
 
 	fun int
 	isScene(string s)
 	{
 		return scene == s;
-	}
-	fun int
-	isControl(string c)
-	{
-		return control == c;
-	}
-
-	fun Step @
-	getPort(string control)
-	{
-		if (wantScene == "")
-			return null;
-
-		Port p;
-		spork ~ p.fetch(device, wantScene, control);
-		return p;
 	}
 
 	fun void
@@ -73,32 +34,33 @@ public class NanoEvent extends GenEvent {
 			      <= IO.newline();
 			me.exit();
 		}
-		chout <= "Opened MIDI device " <= device <= " (" <= min.name() <= ")"
+		chout <= "Opened MIDI device " <= min.num() <= " (" <= min.name() <= ")"
 		      <= IO.newline();
 
 		while (min => now) {
 			while (MidiMsg msg => min.recv) {
-				__channelToScene[msg.data1 & 0x0F] @=> scene;
+				__channelToScene[msg.data1 & 0x0F] => scene;
 				if (scene == "") {
-					cherr <= "Unknown channel "
+					cherr <= "Unknown MIDI channel "
 					      <= (msg.data1 & 0x0F)
 					      <= IO.newline();
-					msg.data1 & 0x0F => Std.itoa @=> scene;
+					msg.data1 & 0x0F => Std.itoa => scene;
 				}
 
 				msg.data1 & 0xF0 => int cmd;
 				msg.data2 => CCId;
 
 				if (__controlToName[scene] != null)
-					__controlToName[scene][CCId] @=> control;
+					__controlToName[scene][CCId] => control;
 				else
-					"" @=> control;
+					"" => control;
 				if (control == "") {
-					cherr <= "Unknown controller " <= CCId
+					cherr <= "Unknown MIDI controller " <= CCId
 					      <= IO.newline();
-					CCId => Std.itoa @=> control;
+					CCId => Std.itoa => control;
 				}
 
+				/* normalize value [0, 127] to [0, 1] */
 				msg.data3/127.0 => value;
 
 				if (cmd == 0xB0 &&
@@ -116,7 +78,7 @@ public class NanoEvent extends GenEvent {
 		NanoEvent obj;
 
 		device => obj.device;
-		scene @=> obj.wantScene;
+		scene => obj.wantScene;
 
 		return obj;
 	}
@@ -125,7 +87,7 @@ public class NanoEvent extends GenEvent {
 	{
 		NanoEvent obj;
 
-		scene @=> obj.wantScene;
+		scene => obj.wantScene;
 
 		return obj;
 	}
@@ -140,7 +102,7 @@ public class NanoEvent extends GenEvent {
 			cherr <= "Warning: Already registered scene name \""
 			      <= name <= "\"" <= IO.newline();
 
-		name @=> __channelToScene[channel];
+		name => __channelToScene[channel];
 		new string[0x100] @=> __controlToName[name];
 	}
 
@@ -152,7 +114,7 @@ public class NanoEvent extends GenEvent {
 			      <= " on scene \"" <= sceneName <= "\""
 			      <= IO.newline();
 
-		controlName @=> __controlToName[sceneName][id];
+		controlName => __controlToName[sceneName][id];
 	}
 }
 /* static initialization */

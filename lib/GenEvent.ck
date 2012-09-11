@@ -2,8 +2,40 @@
  * Base class for controller events
  */
 public class GenEvent extends Event {
-	/* normalized value between [0, 1] */
+	class Port extends Step {
+		fun void
+		update(GenEvent @ev, string control)
+		{
+			while (ev => now)
+				if (control => ev.isControl)
+					ev.getFloat(-1, 1) => next;
+			/* never reached */
+		}
+	}
+
+	/* symbolic control name */
+	string control;
+	/* normalized control value between [0, 1] */
 	float value;
+
+	fun int
+	isControl(string c)
+	{
+		return control == c;
+	}
+
+	/*
+	 * Create and return UGen that generates a control's value,
+	 * normalized between [-1, 1]
+	 */
+	fun Step @
+	getPort(string control)
+	{
+		Port p;
+		spork ~ p.update(this, control);
+
+		return p;
+	}
 
 	/*
 	 * Getter functions to scale `value'
