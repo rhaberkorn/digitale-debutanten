@@ -1,11 +1,11 @@
 /*
  * nanoKONTROL event class
  */
-public class NanoEvent extends Event {
+public class NanoEvent extends GenEvent {
 	/* map channel (0-15) to scene name */
-	static string @__channelToScene[]; /* pseudo-private */
+	static string @__channelToScene[];	/* pseudo-private */
 	/* map scene name and control id (0-255) to control name */
-	static string @__controlToName[][]; /* pseudo-private */
+	static string @__controlToName[][];	/* pseudo-private */
 
 	class Port extends Step {
 		fun void
@@ -40,7 +40,6 @@ public class NanoEvent extends Event {
 	string scene;
 	string control;
 	int CCId;
-	float value;
 
 	fun int
 	isScene(string s)
@@ -62,39 +61,6 @@ public class NanoEvent extends Event {
 		Port p;
 		spork ~ p.fetch(device, wantScene, control);
 		return p;
-	}
-
-	fun float
-	getFloat()
-	{
-		return value;
-	}
-	fun float
-	getFloat(float max)
-	{
-		return max*value;
-	}
-	fun float
-	getFloat(float min, float max)
-	{
-		return min + (max - min)*value;
-	}
-
-	fun dur
-	getDur(dur max)
-	{
-		return max*value;
-	}
-	fun dur
-	getDur(dur min, dur max)
-	{
-		return min + (max - min)*value;
-	}
-
-	fun int
-	getBool()
-	{
-		return value $ int;
 	}
 
 	fun void
@@ -140,6 +106,7 @@ public class NanoEvent extends Event {
 				    	broadcast();
 			}
 		}
+		/* not reached */
 	}
 	spork ~ __midi_loop();
 
