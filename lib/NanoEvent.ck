@@ -64,8 +64,15 @@ public class NanoEvent extends GenEvent {
 				msg.data3/127.0 => value;
 
 				if (cmd == 0xB0 &&
-				    (wantScene == "" || scene == wantScene))
+				    (wantScene == "" || scene == wantScene)) {
 				    	broadcast();
+					/*
+					 * ensure that shreds waiting on the event
+					 * process it before it is overwritten
+					 * by the next message in the queue
+					 */
+					me.yield();
+				}
 			}
 		}
 		/* not reached */

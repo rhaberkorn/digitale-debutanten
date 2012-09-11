@@ -42,6 +42,12 @@ public class RumbleEvent extends GenEvent {
 					      <= IO.newline();
 				} else {
 					broadcast();
+					/*
+					 * ensure that shreds waiting on the event
+					 * process it before it is overwritten
+					 * by the next message in the queue
+					 */
+					me.yield();
 				}
 			}
 		}
