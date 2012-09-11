@@ -6,6 +6,7 @@ Machine.add("lib/Element.ck");
 Machine.add("lib/List.ck");
 Machine.add("lib/GenEvent.ck");
 Machine.add("lib/NanoEvent.ck");
+Machine.add("lib/RumbleEvent.ck");
 
 /* platform independant Clipper classes */
 //Machine.add("lib/ClipperGraph.ck");
