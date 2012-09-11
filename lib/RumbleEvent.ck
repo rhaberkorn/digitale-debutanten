@@ -56,11 +56,12 @@ public class RumbleEvent extends GenEvent {
 	spork ~ __hid_loop();
 }
 /* static initialization */
-["leftJoystickX", "leftJoystickY", "leftButton",
- "rightJoystickX", "rightJoystickY", "rightButton",
+["joystickLeftX", "joystickLeftY", "axisButtonLeft",
+ "joystickRightX", "joystickRightY", "axisButtonRight",
  "cursorX", "cursorY"] @=> RumbleEvent.__axisToName;
 
 ["buttonA", "buttonB", "buttonX", "buttonY",
- "buttonLB", "buttonRB", "buttonStart",
- "", "", "", /* 7 to 9 are unused */
+ "buttonLeft", "buttonRight",
+ "buttonStart", "buttonLogitech",
+ "buttonJoystickLeft", "buttonJoystickRight",
  "buttonBack"] @=> RumbleEvent.__buttonToName;
