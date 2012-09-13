@@ -2,6 +2,13 @@
 
 set -e
 
+colorize()
+{
+	while read line; do
+		echo -e "\e[01;31m$line\e[0m"
+	done
+}
+
 test -n "$CHUCK" || CHUCK=chuck
 
 # kill possibly running stuff
@@ -23,4 +30,5 @@ jack.scope -n 3 -w 512 -b 96512 >/dev/null &
 $CHUCK $* \
       --srate:44100 --in:3 --out:7 \
       --chugin-path:chugins \
-      --loop lib.ck
+      --loop lib.ck \
+      2> >(colorize)
