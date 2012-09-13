@@ -10,13 +10,13 @@ if (me.args() > 1)
 if (me.args() > 0)
 	me.arg(0) => filename;
 
-/* pull samples from the dac */
 WvOut2 out => blackhole;
-"recording" => out.autoPrefix;
+"recordings/recording" => out.autoPrefix;
 filename => out.wavFilename;
 
-dac.chan(0) => out.left;
-dac.chan(1) => out.right;
+/* pull samples from the dac */
+dac.chan(0) => out.chan(0);
+dac.chan(1) => out.chan(1);
 
 /* keep recording as long as shred is running */
 null @=> out; /* BUG WORKAROUND: dereference "out" on shred exit */
