@@ -3,6 +3,9 @@
  * in-port: Bus.channels[0]
  */
 
+/* default buffer size (for banks without stock sample) */
+30::second => dur default_size;
+
 LiSaX lisa[7];
 Gain amp => Bus.out_left;
 amp => Bus.out_right;
@@ -21,12 +24,12 @@ read(0, "samples/stier_loop_stereo.wav");
 
 for (0 => int i; i < lisa.cap(); i++) {
 	if (lisa[i].duration() == 0::samp) {
-		30::second => lisa[i].duration;
-	} else {
-		lisa[i].duration() => lisa[i].loopEnd;
-		lisa[i].duration() => lisa[i].loopEndRec;
+		/* empty sample bank */
+		default_size => lisa[i].duration;
+		/* loop start, end and recording end are initialized! */
+		0::samp => lisa[i].loopEnd;
 	}
-	0 => lisa[i].loop;
+
 	/* setting this to 1 if we only need one voice improves performance */
 	1 => lisa[i].maxVoices;
 
@@ -47,38 +50,36 @@ lisa[0] @=> LiSaX @currentSample;
 
 while (nanoev => now) {
 	if ("recordToggle" => nanoev.isControl) {
-		if (nanoev.getBool()) {
-			if (!currentSample.loop() ||
-			    currentSample.loopEndRec() == 0::samp) {
-				currentSample.duration() => currentSample.loopEndRec;
-				currentSample.clear();
-			} else {
-				currentSample.loopEnd() => currentSample.loopEndRec;
-			}
-			0::samp => currentSample.recPos;
-		} else if (!currentSample.loopRec() ||
-			   currentSample.loopEnd() == 0::samp) {
-			currentSample.recPos() => currentSample.loopEnd;
+		if (currentSample.loop()) {
+			/* loop recording */
+			nanoev.getBool() => currentSample.loopRec;
+			if (currentSample.loopEnd() == 0::samp &&
+			    !nanoev.getBool())
+				currentSample.recPos() => currentSample.loopEndRec
+						       => currentSample.loopEnd;
+		} else if (!(nanoev.getBool() => currentSample.record)) {
+			/* normal recording (overwrite buffer) */
+			currentSample.recPos() => currentSample.loopEnd
+					       => currentSample.loopEndRec;
 		}
 
-		if (currentSample.loop()) {
-			nanoev.getBool() => currentSample.loopRec;
-		} else
-			nanoev.getBool() => currentSample.record;
+		if (nanoev.getBool())
+			0::samp => currentSample.recPos;
 	} else if ("playButton" => nanoev.isControl) {
 		if (nanoev.getBool()) {
 			0::samp => currentSample.playPos;
-			1 => currentSample.play;
+			true => currentSample.play;
 		}
 	} else if ("stopButton" => nanoev.isControl) {
 		if (nanoev.getBool())
-			0 => currentSample.play;
+			false => currentSample.play;
 	} else if ("loopToggle" => nanoev.isControl) {
+		/* toggles loop playing AND loop recording */
 		nanoev.getBool() => currentSample.loop;
 	} else if ("samplerVolumeKnob" => nanoev.isControl) {
 		nanoev.getFloat(10) => currentSample.gain;
 	} else if ("samplerPitchSlider" => nanoev.isControl) {
-		nanoev.getFloat(2) => currentSample.rate;
+		nanoev.getFloat(-2, 2) => currentSample.rate;
 	} else if (nanoev.CCId >= 23 && nanoev.CCId <= 29) {
 		/* chooseSampleButton#CCId pressed */
 		lisa[nanoev.CCId - 23] @=> currentSample;
