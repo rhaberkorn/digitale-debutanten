@@ -1,9 +1,13 @@
-#!/bin/sh
+#!/bin/bash
+
+set -e
+
+test -n "$CHUCK" || CHUCK=chuck
 
 # kill possibly running stuff
-pkill alsa_in
-pkill alsa_out
-pkill jack.scope
+pkill alsa_in || true
+pkill alsa_out || true
+pkill jack.scope || true
 
 # USB sound card JACK ports
 alsa_in -d hw:default -c 1 -q 0 >/dev/null &
@@ -16,7 +20,7 @@ jack.scope -n 3 -w 512 -b 96512 >/dev/null &
 
 # ChucK server
 # NOTE: Last three output ports are for jack.scope
-${CHUCK:-chuck} $* \
+$CHUCK $* \
       --srate:44100 --in:3 --out:7 \
       --chugin-path:chugins \
       --loop lib.ck
