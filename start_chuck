@@ -17,8 +17,8 @@ pkill alsa_out || true
 pkill jack.scope || true
 
 # USB sound card JACK ports
-alsa_in -d hw:default -c 1 -q 0 >/dev/null &
-alsa_out -d hw:default -c 2 -q 0 >/dev/null &
+alsa_in -d hw:default -c 1 -q 1 -p 2048 >/dev/null &
+alsa_out -d hw:default -c 2 -q 1 -p 2048 >/dev/null &
 
 # Jack Oscilloscope (Bus.oscope[] in ChucK)
 # NOTE: frame size given here limits the frame size that can be set later on
